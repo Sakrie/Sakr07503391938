@@ -11,6 +11,7 @@
 </head>
 <body>
 
+<!-- تسجيل -->
 <div id="authBox">
   <h2>تسجيل الدخول</h2>
   <input id="username" placeholder="اسم المستخدم">
@@ -19,10 +20,11 @@
   <button onclick="signup()">إنشاء حساب</button>
 </div>
 
+<!-- التطبيق -->
 <div id="appBox" style="display:none;">
 
 <header>
-<h1>Accounts Manager</h1>
+<h1>📊 نظام إدارة الحسابات</h1>
 <button onclick="logout()">تسجيل خروج</button>
 </header>
 
@@ -31,8 +33,6 @@
 <div class="card">خارج: <span id="outsideTotal">0</span></div>
 <div class="card">بطاقات: <span id="cardsTotal">0</span></div>
 </section>
-
-<canvas id="chart"></canvas>
 
 <section>
 <input id="name" placeholder="اسم المندوب">
@@ -51,7 +51,7 @@
 
 <hr>
 
-<h3>التقارير</h3>
+<h3>📅 التقارير</h3>
 
 من:
 <input type="date" id="fromDate">
