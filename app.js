@@ -4,310 +4,213 @@ let agents = [];
 
 let selectedAgent = null;
 let selectedType = null;
-let chartInstance = null;
 
+// تسجيل
 function signup(){
-  const u = document.getElementById("username").value.trim();
-  const p = document.getElementById("password").value;
+let u=username.value.trim();
+let p=password.value;
 
-  if(!u || !p) return alert("املأ الحقول");
-  if(users[u]) return alert("المستخدم موجود");
+if(!u||!p) return alert("املأ الحقول");
+if(users[u]) return alert("المستخدم موجود");
 
-  users[u] = { password: p, agents: [] };
-  localStorage.setItem("users", JSON.stringify(users));
-  alert("تم إنشاء الحساب");
+users[u]={password:p,agents:[]};
+localStorage.setItem("users",JSON.stringify(users));
+alert("تم");
 }
 
 function login(){
-  const u = document.getElementById("username").value.trim();
-  const p = document.getElementById("password").value;
+let u=username.value.trim();
+let p=password.value;
 
-  if(!users[u] || users[u].password !== p){
-    alert("اسم المستخدم أو كلمة المرور خطأ");
-    return;
-  }
+if(!users[u]||users[u].password!==p)
+return alert("خطأ");
 
-  currentUser = u;
-  agents = users[u].agents || [];
+currentUser=u;
+agents=users[u].agents;
 
-  document.getElementById("authBox").style.display = "none";
-  document.getElementById("appBox").style.display = "block";
+authBox.style.display="none";
+appBox.style.display="block";
 
-  render();
+render();
 }
 
 function logout(){
-  location.reload();
+location.reload();
 }
 
 function save(){
-  users[currentUser].agents = agents;
-  localStorage.setItem("users", JSON.stringify(users));
+users[currentUser].agents=agents;
+localStorage.setItem("users",JSON.stringify(users));
 }
 
+// إضافة مندوب
 function addAgent(){
-  const n = document.getElementById("name").value.trim();
-  const t = document.getElementById("type").value;
+let n=name.value.trim();
+let t=type.value;
+if(!n) return;
 
-  if(!n) return;
+agents.push({name:n,type:t,cards:0,money:0,tips:0,debt:0,history:[]});
 
-  agents.push({
-    name: n,
-    type: t,
-    cards: 0,
-    money: 0,
-    tips: 0,
-    debt: 0,
-    history: []
-  });
-
-  document.getElementById("name").value = "";
-  save();
-  render();
+name.value="";
+save();
+render();
 }
 
+// مودال
 function openModal(i){
-  selectedAgent = i;
-  selectedType = null;
-  document.getElementById("modalTitle").innerText = "عملية لـ " + agents[i].name;
-  document.getElementById("valueInput").value = "";
-  document.getElementById("modal").classList.remove("hidden");
+selectedAgent=i;
+modalTitle.innerText="عملية لـ "+agents[i].name;
+modal.classList.remove("hidden");
 }
 
 function closeModal(){
-  document.getElementById("modal").classList.add("hidden");
-  document.getElementById("valueInput").value = "";
-  selectedType = null;
+modal.classList.add("hidden");
+valueInput.value="";
 }
 
 function chooseType(t){
-  selectedType = t;
+selectedType=t;
 }
 
+// العمليات
 function saveTransaction(){
-  const val = Number(document.getElementById("valueInput").value);
-  if(!val || val <= 0) return;
+let val=Number(valueInput.value);
+if(!val) return;
 
-  const a = agents[selectedAgent];
+let a=agents[selectedAgent];
 
-  if(selectedType === "cards"){
-    const price = a.type === "inside" ? 750 : 1500;
-    const money = val * price;
-    a.cards += val;
-    a.money += money;
-    a.history.push({
-      cards: val,
-      money: money,
-      tip: 0,
-      debt: 0,
-      date: new Date().toISOString(),
-      kind: "cards"
-    });
-  }
-
-  if(selectedType === "money"){
-    a.money += val;
-    a.history.push({
-      cards: 0,
-      money: val,
-      tip: 0,
-      debt: 0,
-      date: new Date().toISOString(),
-      kind: "money"
-    });
-  }
-
-  if(selectedType === "tip"){
-    a.tips += val;
-    a.money += val;
-    a.history.push({
-      cards: 0,
-      money: val,
-      tip: val,
-      debt: 0,
-      date: new Date().toISOString(),
-      kind: "tip"
-    });
-  }
-
-  if(selectedType === "debt"){
-    a.debt += val;
-    a.history.push({
-      cards: 0,
-      money: 0,
-      tip: 0,
-      debt: val,
-      date: new Date().toISOString(),
-      kind: "debt"
-    });
-  }
-
-  save();
-  render();
-  closeModal();
+if(selectedType==="cards"){
+a.cards+=val;
+a.history.push({cards:val,money:0,tip:0,debt:0,date:Date.now()});
 }
 
-function showStatement(i){
-  const a = agents[i];
-  let t = "كشف " + a.name + "\n\n";
-
-  if(a.history.length === 0){
-    alert("لا يوجد سجل");
-    return;
-  }
-
-  a.history.forEach(h => {
-    t += new Date(h.date).toLocaleString("ar-IQ") + "\n";
-    if(h.cards) t += "بطاقات: " + h.cards + "\n";
-    if(h.money) t += "مبلغ: " + h.money + "\n";
-    if(h.tip) t += "إكرامية: " + h.tip + "\n";
-    if(h.debt) t += "سلفة: " + h.debt + "\n";
-    t += "\n";
-  });
-
-  alert(t);
+if(selectedType==="money"){
+a.money+=val;
+a.history.push({cards:0,money:val,tip:0,debt:0,date:Date.now()});
 }
 
-function resetAgent(i){
-  if(!confirm("تصفير؟")) return;
-
-  agents[i] = {
-    ...agents[i],
-    cards: 0,
-    money: 0,
-    tips: 0,
-    debt: 0,
-    history: []
-  };
-
-  save();
-  render();
+if(selectedType==="tip"){
+a.tips+=val;
+a.money+=val;
+a.history.push({cards:0,money:val,tip:val,debt:0,date:Date.now()});
 }
 
-function searchAgent(){
-  const s = document.getElementById("search").value.toLowerCase();
-  document.querySelectorAll("#agents li").forEach(li => {
-    li.style.display = li.innerText.toLowerCase().includes(s) ? "block" : "none";
-  });
+if(selectedType==="debt"){
+a.debt+=val;
+a.history.push({cards:0,money:0,tip:0,debt:val,date:Date.now()});
 }
 
-function drawChart(inside, outside){
-  const ctx = document.getElementById("chart");
-
-  if(chartInstance) chartInstance.destroy();
-
-  chartInstance = new Chart(ctx, {
-    type: "doughnut",
-    data: {
-      labels: ["داخل", "خارج"],
-      datasets: [{
-        data: [inside, outside]
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false
-    }
-  });
+save();
+render();
+closeModal();
 }
 
+// عرض
 function render(){
-  const agentsList = document.getElementById("agents");
-  agentsList.innerHTML = "";
+agentsList.innerHTML="";
 
-  let inside = 0;
-  let outside = 0;
-  let cards = 0;
+let inside=0,outside=0,cards=0;
 
-  agents.forEach((a, i) => {
-    cards += a.cards;
+agents.forEach((a,i)=>{
 
-    if(a.type === "inside") inside += a.money;
-    else outside += a.money;
+cards+=a.cards;
 
-    agentsList.innerHTML += `
-      <li>
-        <b>${a.name}</b><br>
-        بطاقات: ${a.cards}<br>
-        إكراميات: ${a.tips}<br>
-        دين: ${a.debt}<br>
-        مبلغ: ${a.money}<br><br>
+if(a.type==="inside") inside+=a.money;
+else outside+=a.money;
 
-        <button onclick="openModal(${i})">➕</button>
-        <button onclick="showStatement(${i})">كشف</button>
-        <button onclick="resetAgent(${i})">تصفير</button>
-      </li>
-    `;
-  });
+agentsList.innerHTML+=`
+<li>
+<b>${a.name}</b><br>
+بطاقات:${a.cards}<br>
+إكراميات:${a.tips}<br>
+دين:${a.debt}<br>
+مبلغ:${a.money}<br>
 
-  document.getElementById("insideTotal").innerText = inside;
-  document.getElementById("outsideTotal").innerText = outside;
-  document.getElementById("cardsTotal").innerText = cards;
+<button onclick="openModal(${i})">➕</button>
+<button onclick="showStatement(${i})">كشف</button>
+<button onclick="resetAgent(${i})">تصفير</button>
+</li>
+`;
+});
 
-  drawChart(inside, outside);
+insideTotal.innerText=inside;
+outsideTotal.innerText=outside;
+cardsTotal.innerText=cards;
 }
 
-function resetAll(){
-  if(!confirm("تصفير الكل؟")) return;
-  agents = [];
-  save();
-  render();
-}
-
+// التقرير (🔥 إصلاح نهائي)
 function generateReport(){
-  const m = document.getElementById("monthPicker").value;
-  if(!m) return alert("اختر شهر");
+let fromVal = fromDate.value;
+let toVal = toDate.value;
 
-  let [y, mo] = m.split("-");
-  mo = Number(mo) - 1;
-  y = Number(y);
-
-  let html = "<table class='report-table'><thead><tr><th>مندوب</th><th>بطاقات</th><th>إكراميات</th><th>دين</th><th>مبلغ</th></tr></thead><tbody>";
-
-  agents.forEach(a => {
-    let c = 0, m2 = 0, t = 0, d2 = 0;
-
-    a.history.forEach(h => {
-      const d = new Date(h.date);
-      if(d.getFullYear() === y && d.getMonth() === mo){
-        c += h.cards || 0;
-        m2 += h.money || 0;
-        t += h.tip || 0;
-        d2 += h.debt || 0;
-      }
-    });
-
-    html += `<tr><td>${a.name}</td><td>${c}</td><td>${t}</td><td>${d2}</td><td>${m2}</td></tr>`;
-  });
-
-  html += "</tbody></table>";
-  document.getElementById("reportBox").innerHTML = html;
+if(!fromVal || !toVal){
+alert("حدد الفترة");
+return;
 }
 
+let from = new Date(fromVal).setHours(0,0,0,0);
+let to = new Date(toVal).setHours(23,59,59,999);
+
+let insideHTML="", outsideHTML="";
+let insideTotal=0,outsideTotal=0;
+
+agents.forEach(a=>{
+
+let total=0,c=0,t=0,d=0;
+
+a.history.forEach(h=>{
+let dt = new Date(h.date).getTime();
+
+if(dt >= from && dt <= to){
+total += h.money || 0;
+c += h.cards || 0;
+t += h.tip || 0;
+d += h.debt || 0;
+}
+});
+
+if(total===0 && c===0 && t===0 && d===0) return;
+
+let row = `<tr>
+<td>${a.name}</td>
+<td>${c}</td>
+<td>${t}</td>
+<td>${d}</td>
+<td>${total}</td>
+</tr>`;
+
+if(a.type==="inside"){
+insideHTML+=row;
+insideTotal+=total;
+}else{
+outsideHTML+=row;
+outsideTotal+=total;
+}
+
+});
+
+reportBox.innerHTML=`
+<h2>داخل</h2>
+<table class="report-table">
+<tr><th>مندوب</th><th>بطاقات</th><th>إكرامية</th><th>دين</th><th>مبلغ</th></tr>
+${insideHTML}
+</table>
+
+<p>الإجمالي: ${insideTotal}</p>
+
+<h2>خارج</h2>
+<table class="report-table">
+<tr><th>مندوب</th><th>بطاقات</th><th>إكرامية</th><th>دين</th><th>مبلغ</th></tr>
+${outsideHTML}
+</table>
+
+<p>الإجمالي: ${outsideTotal}</p>
+`;
+}
+
+// PDF
 function exportPDF(){
-  const data = document.getElementById("reportBox").innerHTML;
-  const w = window.open("", "_blank");
-
-  w.document.write(`
-    <html dir="rtl">
-    <head>
-      <meta charset="UTF-8">
-      <title>التقرير الشهري</title>
-      <style>
-        body{font-family:Arial;padding:20px}
-        table{width:100%;border-collapse:collapse}
-        td,th{border:1px solid #000;padding:8px;text-align:center}
-        th{background:#1565c0;color:white}
-      </style>
-    </head>
-    <body>
-      <h2 style="text-align:center">التقرير الشهري</h2>
-      ${data}
-    </body>
-    </html>
-  `);
-
-  w.document.close();
-  w.focus();
-  w.print();
+let w=window.open("");
+w.document.write(`<html dir="rtl"><body>${reportBox.innerHTML}</body></html>`);
+w.print();
 }
